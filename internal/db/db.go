@@ -12,7 +12,7 @@ import (
 func Connect() (*pgxpool.Pool, error) {
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		connStr = "postgres://postgres:root@localhost:5439/tou_db?sslmode=disable"
+		connStr = "postgres://postgres:root@localhost:5432/tou_db?sslmode=disable"
 	}
 
 	config, err := pgxpool.ParseConfig(connStr)
