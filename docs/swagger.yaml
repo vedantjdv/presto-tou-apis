@@ -1,0 +1,375 @@
+basePath: /
+definitions:
+  models.BulkScheduleInput:
+    properties:
+      charger_ids:
+        items:
+          type: integer
+        type: array
+      schedule_id:
+        type: integer
+    required:
+    - charger_ids
+    - schedule_id
+    type: object
+  models.Charger:
+    properties:
+      created_date:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      timezone:
+        type: string
+    type: object
+  models.ChargerInput:
+    properties:
+      name:
+        type: string
+      timezone:
+        type: string
+    required:
+    - name
+    - timezone
+    type: object
+  models.Interval:
+    properties:
+      days_of_week:
+        type: integer
+      end_time:
+        description: HH:MM:SS
+        type: string
+      id:
+        type: integer
+      price_per_kwh:
+        type: number
+      start_time:
+        description: HH:MM:SS
+        type: string
+    type: object
+  models.IntervalInput:
+    properties:
+      days_of_week:
+        type: integer
+      end_time:
+        type: string
+      price_per_kwh:
+        type: number
+      start_time:
+        type: string
+    required:
+    - days_of_week
+    - end_time
+    - price_per_kwh
+    - start_time
+    type: object
+  models.PriceResponse:
+    properties:
+      charger_id:
+        type: integer
+      currency:
+        type: string
+      price_per_kwh:
+        type: number
+      timestamp:
+        type: string
+    type: object
+  models.Schedule:
+    properties:
+      created_date:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      intervals:
+        items:
+          $ref: '#/definitions/models.Interval'
+        type: array
+      name:
+        type: string
+    type: object
+  models.ScheduleInput:
+    properties:
+      description:
+        type: string
+      intervals:
+        items:
+          $ref: '#/definitions/models.IntervalInput'
+        type: array
+      name:
+        type: string
+    required:
+    - intervals
+    - name
+    type: object
+host: localhost:8071
+info:
+  contact: {}
+  description: A backend service for managing Time-of-Use (TOU) pricing for EV chargers.
+  title: EV Charger TOU Pricing API
+  version: "1.0"
+paths:
+  /v1/chargers:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new charger with the given name and timezone. See /v1/timezones
+        for a list of valid timezones.
+      parameters:
+      - description: Charger object
+        in: body
+        name: charger
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChargerInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Charger'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new charger
+      tags:
+      - chargers
+  /v1/chargers/{id}/price:
+    get:
+      consumes:
+      - application/json
+      description: Returns the price per kWh for a given charger and timestamp. Defaults
+        to now in UTC if no timestamp provided.
+      parameters:
+      - description: Charger ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Timestamp in RFC3339 format (e.g. 2024-05-10T15:00:00Z)
+        in: query
+        name: timestamp
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PriceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get price for a charger at a specific time
+      tags:
+      - chargers
+  /v1/chargers/{id}/schedule:
+    post:
+      consumes:
+      - application/json
+      description: Links a charger to a specific pricing schedule.
+      parameters:
+      - description: Charger ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Schedule ID (e.g. {''schedule_id'': 1})'
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties:
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Assign a schedule to a charger
+      tags:
+      - chargers
+  /v1/chargers/bulk-schedule:
+    post:
+      consumes:
+      - application/json
+      description: Links multiple chargers to a specific pricing schedule in one request.
+      parameters:
+      - description: Bulk assignment object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.BulkScheduleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Assign a schedule to multiple chargers
+      tags:
+      - chargers
+  /v1/schedules:
+    get:
+      description: Returns a list of all available pricing schedules.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Schedule'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all schedules
+      tags:
+      - schedules
+    post:
+      consumes:
+      - application/json
+      description: Creates a new schedule with a list of intervals.
+      parameters:
+      - description: Schedule object
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScheduleInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a pricing schedule
+      tags:
+      - schedules
+  /v1/schedules/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates the name, description, and intervals of an existing schedule.
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Schedule object
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.ScheduleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a schedule
+      tags:
+      - schedules
+  /v1/timezones:
+    get:
+      description: Returns a list of common valid timezones that can be used when
+        creating a charger.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: List common valid timezones
+      tags:
+      - chargers
+swagger: "2.0"

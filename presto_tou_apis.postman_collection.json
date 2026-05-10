@@ -1,0 +1,225 @@
+{
+	"info": {
+		"_postman_id": "4260604e-9ef4-4a95-8c83-8a009a452b88",
+		"name": "Presto TOU APIs",
+		"description": "Collection for Presto TOU (Time of Use) Service APIs.\n\n### Base URL\nThe default base URL is set to `http://localhost:8071 You can change this in the collection variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Check if the server is up and running."
+			},
+			"response": []
+		},
+		{
+			"name": "Chargers",
+			"item": [
+				{
+					"name": "Create Charger",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Charger 1\",\n    \"timezone\": \"UTC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/chargers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"chargers"
+							]
+						},
+						"description": "Create a new charger with a name and timezone."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Price",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/chargers/:id/price?timestamp=2024-05-09T10:00:00Z",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"chargers",
+								":id",
+								"price"
+							],
+							"query": [
+								{
+									"key": "timestamp",
+									"value": "2024-05-09T10:00:00Z",
+									"description": "Optional RFC3339 timestamp. Defaults to current time."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get the pricing for a specific charger at a given timestamp."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Schedule",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"schedule_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/chargers/:id/schedule",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"chargers",
+								":id",
+								"schedule"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Assign an existing pricing schedule to a charger."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Schedules",
+			"item": [
+				{
+					"name": "Create Schedule",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Schedule\",\n    \"intervals\": [\n        {\n            \"start_time\": \"00:00:00\",\n            \"end_time\": \"23:59:59\",\n            \"price_per_kwh\": 0.25,\n            \"days_of_week\": 127\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/schedules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"schedules"
+							]
+						},
+						"description": "Create a new pricing schedule with intervals."
+					},
+					"response": []
+				},
+				{
+					"name": "List Schedules",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v1/schedules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"schedules"
+							]
+						},
+						"description": "List all available pricing schedules."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Schedule\",\n    \"intervals\": [\n        {\n            \"start_time\": \"00:00:00\",\n            \"end_time\": \"12:00:00\",\n            \"price_per_kwh\": 0.15,\n            \"days_of_week\": 127\n        },\n        {\n            \"start_time\": \"12:00:01\",\n            \"end_time\": \"23:59:59\",\n            \"price_per_kwh\": 0.30,\n            \"days_of_week\": 127\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/v1/schedules/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v1",
+								"schedules",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Update an existing schedule and its intervals."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8071",
+			"type": "string"
+		}
+	]
+}
