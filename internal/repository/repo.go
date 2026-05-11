@@ -203,8 +203,11 @@ func (r *Repository) GetPriceAtTime(ctx context.Context, chargerID int, localTim
 		JOIN charger_schedules cs ON i.schedule_id = cs.schedule_id
 		WHERE cs.charger_id = $1
 		  AND i.days_of_week & $2 > 0
-		  AND i.start_time <= $3::TIME
-		  AND i.end_time > $3::TIME
+		  AND (
+		      (i.start_time < i.end_time AND $3::TIME >= i.start_time AND $3::TIME < i.end_time)
+		      OR
+		      (i.start_time > i.end_time AND ($3::TIME >= i.start_time OR $3::TIME < i.end_time))
+		  )
 		ORDER BY i.created_date DESC
 		LIMIT 1
 	`
