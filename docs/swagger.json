@@ -11,7 +11,7 @@
     "paths": {
         "/v1/chargers": {
             "post": {
-                "description": "Creates a new charger with the given name and timezone. See /v1/timezones for a list of valid timezones.",
+                "description": "Creates a new charger with the given name, address, and timezone. See /v1/timezones for a list of valid timezones.",
                 "consumes": [
                     "application/json"
                 ],
@@ -61,9 +61,9 @@
                 }
             }
         },
-        "/v1/chargers/bulk-schedule": {
+        "/v1/chargers/assign-schedule": {
             "post": {
-                "description": "Links multiple chargers to a specific pricing schedule in one request.",
+                "description": "Links one or more chargers to a specific pricing schedule in one request.",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,10 +73,10 @@
                 "tags": [
                     "chargers"
                 ],
-                "summary": "Assign a schedule to multiple chargers",
+                "summary": "Assign a schedule to chargers",
                 "parameters": [
                     {
-                        "description": "Bulk assignment object",
+                        "description": "Assignment object",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -162,71 +162,6 @@
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/chargers/{id}/schedule": {
-            "post": {
-                "description": "Links a charger to a specific pricing schedule.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "chargers"
-                ],
-                "summary": "Assign a schedule to a charger",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Charger ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Schedule ID (e.g. {'schedule_id': 1})",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -424,6 +359,9 @@
         "models.Charger": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "created_date": {
                     "type": "string"
                 },
@@ -445,6 +383,9 @@
                 "timezone"
             ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },

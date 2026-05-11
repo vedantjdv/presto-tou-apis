@@ -66,7 +66,7 @@ func (h *Handler) GetPrice(c *gin.Context) {
 
 // CreateCharger godoc
 // @Summary Create a new charger
-// @Description Creates a new charger with the given name and timezone. See /v1/timezones for a list of valid timezones.
+// @Description Creates a new charger with the given name, address, and timezone. See /v1/timezones for a list of valid timezones.
 // @Tags chargers
 // @Accept json
 // @Produce json
@@ -90,6 +90,7 @@ func (h *Handler) CreateCharger(c *gin.Context) {
 
 	charger := models.Charger{
 		Name:     input.Name,
+		Address:  input.Address,
 		Timezone: input.Timezone,
 	}
 
@@ -273,60 +274,24 @@ func (h *Handler) UpdateSchedule(c *gin.Context) {
 }
 
 // AssignSchedule godoc
-// @Summary Assign a schedule to a charger
-// @Description Links a charger to a specific pricing schedule.
+// @Summary Assign a schedule to chargers
+// @Description Links one or more chargers to a specific pricing schedule in one request.
 // @Tags chargers
 // @Accept json
 // @Produce json
-// @Param id path int true "Charger ID"
-// @Param body body map[string]int true "Schedule ID (e.g. {'schedule_id': 1})"
+// @Param body body models.BulkScheduleInput true "Assignment object"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /v1/chargers/{id}/schedule [post]
+// @Router /v1/chargers/assign-schedule [post]
 func (h *Handler) AssignSchedule(c *gin.Context) {
-	chargerIDStr := c.Param("id")
-	chargerID, err := strconv.Atoi(chargerIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid charger id"})
-		return
-	}
-
-	var req struct {
-		ScheduleID int `json:"schedule_id" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := h.svc.AssignSchedule(c.Request.Context(), chargerID, req.ScheduleID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "schedule assigned successfully"})
-}
-
-// BulkAssignSchedule godoc
-// @Summary Assign a schedule to multiple chargers
-// @Description Links multiple chargers to a specific pricing schedule in one request.
-// @Tags chargers
-// @Accept json
-// @Produce json
-// @Param body body models.BulkScheduleInput true "Bulk assignment object"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
-// @Router /v1/chargers/bulk-schedule [post]
-func (h *Handler) BulkAssignSchedule(c *gin.Context) {
 	var input models.BulkScheduleInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.svc.BulkAssignSchedule(c.Request.Context(), input.ChargerIDs, input.ScheduleID); err != nil {
+	if err := h.svc.AssignSchedule(c.Request.Context(), input.ChargerIDs, input.ScheduleID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

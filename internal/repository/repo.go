@@ -20,14 +20,14 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 
 // Chargers
 func (r *Repository) CreateCharger(ctx context.Context, charger *models.Charger) error {
-	query := `INSERT INTO chargers (name, timezone) VALUES ($1, $2) RETURNING id, created_date`
-	return r.pool.QueryRow(ctx, query, charger.Name, charger.Timezone).Scan(&charger.ID, &charger.CreatedDate)
+	query := `INSERT INTO chargers (name, address, timezone) VALUES ($1, $2, $3) RETURNING id, created_date`
+	return r.pool.QueryRow(ctx, query, charger.Name, charger.Address, charger.Timezone).Scan(&charger.ID, &charger.CreatedDate)
 }
 
 func (r *Repository) GetCharger(ctx context.Context, id int) (*models.Charger, error) {
 	var charger models.Charger
-	query := `SELECT id, name, timezone, created_date FROM chargers WHERE id = $1`
-	err := r.pool.QueryRow(ctx, query, id).Scan(&charger.ID, &charger.Name, &charger.Timezone, &charger.CreatedDate)
+	query := `SELECT id, name, address, timezone, created_date FROM chargers WHERE id = $1`
+	err := r.pool.QueryRow(ctx, query, id).Scan(&charger.ID, &charger.Name, &charger.Address, &charger.Timezone, &charger.CreatedDate)
 	if err != nil {
 		return nil, err
 	}
@@ -160,22 +160,13 @@ func (r *Repository) UpdateSchedule(ctx context.Context, schedule *models.Schedu
 }
 
 // Charger Schedules
-func (r *Repository) AssignScheduleToCharger(ctx context.Context, chargerID, scheduleID int) error {
-	query := `INSERT INTO charger_schedules (charger_id, schedule_id) VALUES ($1, $2)
-              ON CONFLICT (charger_id, schedule_id) DO NOTHING`
-	_, err := r.pool.Exec(ctx, query, chargerID, scheduleID)
-	return err
-}
-
-func (r *Repository) BulkAssignScheduleToChargers(ctx context.Context, chargerIDs []int, scheduleID int) error {
+func (r *Repository) AssignScheduleToChargers(ctx context.Context, chargerIDs []int, scheduleID int) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	// Optional: Clear existing schedules for these chargers if we want 1-to-1
-	// For now, let's just insert/ignore to match the current pattern
 	query := `INSERT INTO charger_schedules (charger_id, schedule_id) VALUES ($1, $2)
               ON CONFLICT (charger_id, schedule_id) DO NOTHING`
 

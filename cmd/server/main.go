@@ -59,8 +59,7 @@ func main() {
 	{
 		v1.POST("/chargers", h.CreateCharger)
 		v1.GET("/chargers/:id/price", h.GetPrice)
-		v1.POST("/chargers/:id/schedule", h.AssignSchedule)
-		v1.POST("/chargers/bulk-schedule", h.BulkAssignSchedule)
+		v1.POST("/chargers/assign-schedule", h.AssignSchedule)
 		v1.GET("/timezones", h.ListTimezones)
 
 		v1.POST("/schedules", h.CreateSchedule)

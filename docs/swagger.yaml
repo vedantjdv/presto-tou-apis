@@ -14,6 +14,8 @@ definitions:
     type: object
   models.Charger:
     properties:
+      address:
+        type: string
       created_date:
         type: string
       id:
@@ -25,6 +27,8 @@ definitions:
     type: object
   models.ChargerInput:
     properties:
+      address:
+        type: string
       name:
         type: string
       timezone:
@@ -115,8 +119,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new charger with the given name and timezone. See /v1/timezones
-        for a list of valid timezones.
+      description: Creates a new charger with the given name, address, and timezone.
+        See /v1/timezones for a list of valid timezones.
       parameters:
       - description: Charger object
         in: body
@@ -184,56 +188,14 @@ paths:
       summary: Get price for a charger at a specific time
       tags:
       - chargers
-  /v1/chargers/{id}/schedule:
+  /v1/chargers/assign-schedule:
     post:
       consumes:
       - application/json
-      description: Links a charger to a specific pricing schedule.
+      description: Links one or more chargers to a specific pricing schedule in one
+        request.
       parameters:
-      - description: Charger ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: 'Schedule ID (e.g. {''schedule_id'': 1})'
-        in: body
-        name: body
-        required: true
-        schema:
-          additionalProperties:
-            type: integer
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Assign a schedule to a charger
-      tags:
-      - chargers
-  /v1/chargers/bulk-schedule:
-    post:
-      consumes:
-      - application/json
-      description: Links multiple chargers to a specific pricing schedule in one request.
-      parameters:
-      - description: Bulk assignment object
+      - description: Assignment object
         in: body
         name: body
         required: true
@@ -260,7 +222,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Assign a schedule to multiple chargers
+      summary: Assign a schedule to chargers
       tags:
       - chargers
   /v1/schedules:

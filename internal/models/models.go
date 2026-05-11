@@ -7,12 +7,14 @@ import (
 type Charger struct {
 	ID          int       `json:"id" db:"id"`
 	Name        string    `json:"name" db:"name"`
+	Address     string    `json:"address" db:"address"`
 	Timezone    string    `json:"timezone" db:"timezone"`
 	CreatedDate time.Time `json:"created_date" db:"created_date"`
 }
 
 type ChargerInput struct {
 	Name     string `json:"name" binding:"required"`
+	Address  string `json:"address"`
 	Timezone string `json:"timezone" binding:"required"`
 }
 

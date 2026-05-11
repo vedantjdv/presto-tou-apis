@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -35,15 +36,22 @@ func Connect() (*pgxpool.Pool, error) {
 }
 
 func InitSchema(pool *pgxpool.Pool) error {
-	migrationPath := "migrations/0001_init.sql"
-	content, err := os.ReadFile(migrationPath)
+	matches, err := filepath.Glob("migrations/*.sql")
 	if err != nil {
-		return fmt.Errorf("unable to read migration file: %v", err)
+		return fmt.Errorf("unable to find migration files: %v", err)
 	}
 
-	_, err = pool.Exec(context.Background(), string(content))
-	if err != nil {
-		return fmt.Errorf("unable to execute migration: %v", err)
+	for _, path := range matches {
+		log.Printf("Executing migration: %s", path)
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("unable to read migration file %s: %v", path, err)
+		}
+
+		_, err = pool.Exec(context.Background(), string(content))
+		if err != nil {
+			return fmt.Errorf("unable to execute migration %s: %v", path, err)
+		}
 	}
 
 	log.Println("Database schema initialized")

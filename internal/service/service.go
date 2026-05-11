@@ -63,10 +63,6 @@ func (s *Service) UpdateSchedule(ctx context.Context, schedule *models.Schedule)
 	return s.repo.UpdateSchedule(ctx, schedule)
 }
 
-func (s *Service) AssignSchedule(ctx context.Context, chargerID, scheduleID int) error {
-	return s.repo.AssignScheduleToCharger(ctx, chargerID, scheduleID)
-}
-
-func (s *Service) BulkAssignSchedule(ctx context.Context, chargerIDs []int, scheduleID int) error {
-	return s.repo.BulkAssignScheduleToChargers(ctx, chargerIDs, scheduleID)
+func (s *Service) AssignSchedule(ctx context.Context, chargerIDs []int, scheduleID int) error {
+	return s.repo.AssignScheduleToChargers(ctx, chargerIDs, scheduleID)
 }
