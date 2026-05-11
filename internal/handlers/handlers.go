@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/presto-tou-apis/internal/models"
@@ -17,6 +16,11 @@ type Handler struct {
 
 func NewHandler(svc *service.Service) *Handler {
 	return &Handler{svc: svc}
+}
+
+func validateTime(t string) error {
+	_, err := time.Parse("15:04:05", t)
+	return err
 }
 
 // GetPrice godoc
@@ -78,19 +82,18 @@ func (h *Handler) CreateCharger(c *gin.Context) {
 		return
 	}
 
+	// Validate timezone
+	if _, err := time.LoadLocation(input.Timezone); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid timezone: " + input.Timezone + ". Use /v1/timezones to see samples."})
+		return
+	}
+
 	charger := models.Charger{
 		Name:     input.Name,
 		Timezone: input.Timezone,
 	}
 
 	if err := h.svc.CreateCharger(c.Request.Context(), &charger); err != nil {
-		if strings.Contains(err.Error(), "invalid timezone") {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error() + ". Hit /v1/timezones to get valid timezones",
-			})
-			return
-		}
-
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -143,6 +146,24 @@ func (h *Handler) CreateSchedule(c *gin.Context) {
 
 	intervals := make([]models.Interval, len(input.Intervals))
 	for i, v := range input.Intervals {
+		// Validation
+		if err := validateTime(v.StartTime); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start_time format (HH:MM:SS): " + v.StartTime})
+			return
+		}
+		if err := validateTime(v.EndTime); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end_time format (HH:MM:SS): " + v.EndTime})
+			return
+		}
+		if v.PricePerKWh < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "price_per_kwh cannot be negative"})
+			return
+		}
+		if v.DaysOfWeek < 0 || v.DaysOfWeek > 127 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "days_of_week must be between 0 and 127"})
+			return
+		}
+
 		intervals[i] = models.Interval{
 			StartTime:   v.StartTime,
 			EndTime:     v.EndTime,
@@ -210,6 +231,24 @@ func (h *Handler) UpdateSchedule(c *gin.Context) {
 
 	intervals := make([]models.Interval, len(input.Intervals))
 	for i, v := range input.Intervals {
+		// Validation
+		if err := validateTime(v.StartTime); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start_time format (HH:MM:SS): " + v.StartTime})
+			return
+		}
+		if err := validateTime(v.EndTime); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end_time format (HH:MM:SS): " + v.EndTime})
+			return
+		}
+		if v.PricePerKWh < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "price_per_kwh cannot be negative"})
+			return
+		}
+		if v.DaysOfWeek < 0 || v.DaysOfWeek > 127 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "days_of_week must be between 0 and 127"})
+			return
+		}
+
 		intervals[i] = models.Interval{
 			StartTime:   v.StartTime,
 			EndTime:     v.EndTime,
